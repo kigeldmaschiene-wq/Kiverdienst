@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Setup - KIVerdienst v2{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="card">
+        <h1>?? KIVerdienst v2 Setup</h1>
+        <p>Welcome! Let's get your content generation system up and running.</p>
+        <div class="setup-steps">
+            <div class="step">
+                <h3>Step 1: Initialize System</h3>
+                <p>Set up database and core components</p>
+            </div>
+            <div class="step">
+                <h3>Step 2: Configure Brands</h3>
+                <p>Create your content brands and niches</p>
+            </div>
+            <div class="step">
+                <h3>Step 3: Start Creating</h3>
+                <p>Begin automated content generation</p>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="startSetup()">Start Setup</button>
+        <div id="error" class="error" style="display:none;"></div>
+        <div id="success" class="success" style="display:none;">Setup complete! Redirecting...</div>
+    </div>
+</div>
+{% endblock %}

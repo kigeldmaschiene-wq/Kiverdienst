@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Videos - KIVerdienst v2{% endblock %}
+{% block content %}
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">?? KIVerdienst v2</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/brands">Brands</a>
+            <a href="/characters">Characters</a>
+            <a href="/videos" class="active">Videos</a>
+            <a href="/accounts">Accounts</a>
+            <a href="/analytics">Analytics</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <h1>Videos</h1>
+        <button class="btn btn-primary" onclick="generateVideo()">+ Generate Video</button>
+    </div>
+    
+    <div class="filters">
+        <select id="statusFilter" onchange="filterVideos()">
+            <option value="all">All Status</option>
+            <option value="draft">Draft</option>
+            <option value="processing">Processing</option>
+            <option value="ready">Ready</option>
+            <option value="posted">Posted</option>
+        </select>
+        <select id="platformFilter" onchange="filterVideos()">
+            <option value="all">All Platforms</option>
+            <option value="tiktok">TikTok</option>
+            <option value="instagram">Instagram</option>
+            <option value="youtube">YouTube</option>
+        </select>
+    </div>
+    
+    <div id="videosList" class="list-container">
+        <p>Loading videos...</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/videos.js"></script>
+<script>loadVideos();</script>
+{% endblock %}

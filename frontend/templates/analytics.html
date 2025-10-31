@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Analytics - KIVerdienst v2{% endblock %}
+{% block content %}
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">?? KIVerdienst v2</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/brands">Brands</a>
+            <a href="/characters">Characters</a>
+            <a href="/videos">Videos</a>
+            <a href="/accounts">Accounts</a>
+            <a href="/analytics" class="active">Analytics</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h1>Analytics & Performance</h1>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Views</h3>
+            <p class="stat-number" id="totalViews">0</p>
+            <p class="stat-change positive">+12% vs last week</p>
+        </div>
+        <div class="stat-card">
+            <h3>Engagement Rate</h3>
+            <p class="stat-number" id="engagementRate">0%</p>
+        </div>
+        <div class="stat-card">
+            <h3>Viral Videos</h3>
+            <p class="stat-number" id="viralVideos">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Revenue This Month</h3>
+            <p class="stat-number" id="monthRevenue">?0</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Performance by Platform</h2>
+        <div id="platformChart"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Top Performing Videos</h2>
+        <div id="topVideos"></div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="/static/js/analytics.js"></script>
+<script>loadAnalytics();</script>
+{% endblock %}
