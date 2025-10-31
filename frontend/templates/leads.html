@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Leads - KIVerdienst v2{% endblock %}
+{% block content %}
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">?? KIVerdienst v2</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/brands">Brands</a>
+            <a href="/videos">Videos</a>
+            <a href="/products">Products</a>
+            <a href="/leads" class="active">Leads</a>
+            <a href="/analytics">Analytics</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="header-row">
+        <h1>Email Leads</h1>
+        <button class="btn btn-primary" onclick="addLead()">+ Add Lead</button>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Total Leads</h3>
+            <p class="stat-number" id="totalLeads">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Active</h3>
+            <p class="stat-number" id="activeLeads">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Conversion Rate</h3>
+            <p class="stat-number" id="conversionRate">0%</p>
+        </div>
+    </div>
+    
+    <div id="leadsList" class="list-container">
+        <p>Loading leads...</p>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>loadLeads();</script>
+{% endblock %}
