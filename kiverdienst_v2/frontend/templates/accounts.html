@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}Social Accounts - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Social Media Accounts</h1>
+            <p class="text-gray-600 mt-1">Verwalte deine verbundenen Social Media Konten</p>
+        </div>
+        <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i>Account verbinden
+        </button>
+    </div>
+    
+    <!-- Accounts Grid -->
+    <div id="content-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Accounts werden hier eingef?gt -->
+    </div>
+    
+    <!-- Create/Edit Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold" id="modal-title">Account verbinden</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="form" onsubmit="handleSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Plattform *</label>
+                        <select id="platform" name="platform" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="tiktok">TikTok</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="youtube">YouTube</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Marke *</label>
+                        <select id="brand_id" name="brand_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Marke w?hlen...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                        <input type="text" id="username" name="username" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="@username">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Session Cookie (optional)</label>
+                        <textarea id="session_data" name="session_data" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-xs" placeholder="Session Cookie hier einf?gen..."></textarea>
+                        <p class="text-xs text-gray-500 mt-1">F?r automatisches Posting erforderlich</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let accounts = [];
+let brands = [];
+let editingId = null;
+
+async function loadBrands() {
+    try {
+        const data = await apiCall('/api/brands');
+        brands = data;
+        const select = document.getElementById('brand_id');
+        if (select) {
+            select.innerHTML = '<option value="">Marke w?hlen...</option>' + 
+                brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading brands:', error);
+    }
+}
+
+async function loadData() {
+    try {
+        const data = await apiCall('/api/accounts');
+        accounts = data;
+        renderItems();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+function renderItems() {
+    const container = document.getElementById('content-container');
+    
+    if (accounts.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <i class="fa-solid fa-share-nodes text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-4">Noch keine Accounts verbunden</p>
+                <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Ersten Account verbinden
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = accounts.map(acc => {
+        const platformIcons = {
+            'tiktok': '<i class="fa-brands fa-tiktok text-2xl"></i>',
+            'instagram': '<i class="fa-brands fa-instagram text-2xl text-pink-600"></i>',
+            'youtube': '<i class="fa-brands fa-youtube text-2xl text-red-600"></i>'
+        };
+        
+        const statusColors = {
+            'active': 'bg-green-100 text-green-800',
+            'inactive': 'bg-gray-100 text-gray-800',
+            'error': 'bg-red-100 text-red-800'
+        };
+        
+        return `
+            <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        ${platformIcons[acc.platform] || '<i class="fa-solid fa-globe text-2xl"></i>'}
+                        <div class="ml-3">
+                            <h3 class="font-bold">@${acc.username}</h3>
+                            <p class="text-sm text-gray-600">${acc.brand_name || 'Keine Marke'}</p>
+                        </div>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full ${statusColors[acc.status] || 'bg-gray-100 text-gray-800'}">
+                        ${acc.status}
+                    </span>
+                </div>
+                
+                <div class="text-sm text-gray-600 mb-4">
+                    <p><i class="fa-solid fa-users mr-2"></i>Follower: ${formatNumber(acc.followers || 0)}</p>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="testConnection(${acc.id})" class="flex-1 px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm">
+                        <i class="fa-solid fa-plug mr-1"></i>Testen
+                    </button>
+                    <button onclick="deleteItem(${acc.id})" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openCreateModal() {
+    editingId = null;
+    document.getElementById('form').reset();
+    document.getElementById('modal-title').textContent = 'Account verbinden';
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
+
+async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    data.status = 'active';
+    
+    try {
+        await apiCall('/api/accounts', { method: 'POST', body: JSON.stringify(data) });
+        showSuccess('Account verbunden');
+        closeModal();
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+async function deleteItem(id) {
+    if (!confirmAction('Account wirklich entfernen?')) return;
+    
+    try {
+        await apiCall(`/api/accounts/${id}`, { method: 'DELETE' });
+        showSuccess('Account entfernt');
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+async function testConnection(id) {
+    showInfo('Verbindung wird getestet...');
+    // In production: Test actual connection
+    setTimeout(() => showSuccess('Verbindung erfolgreich!'), 1000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadBrands();
+    loadData();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kiverdienst_v2_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-kiverdienst_v2}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-kiverdienst2024secure}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - kiverdienst_network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: kiverdienst_v2_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-kiverdienst_v2}
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-kiverdienst2024secure}
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key}
+      RUNWAY_API_KEY: ${RUNWAY_API_KEY:-}
+      AZURE_TTS_KEY: ${AZURE_TTS_KEY:-}
+      AZURE_TTS_REGION: ${AZURE_TTS_REGION:-westeurope}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - kiverdienst_network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: kiverdienst_v2_frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      BACKEND_URL: ${BACKEND_URL:-http://backend:8000}
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - kiverdienst_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  kiverdienst_network:
+    driver: bridge
