@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+        <p class="text-gray-600 mt-1">Performance-?bersicht deiner Marken und Videos</p>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Gesamt Views</p>
+                    <p class="text-3xl font-bold" id="total-views">0</p>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full">
+                    <i class="fa-solid fa-eye text-blue-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Engagement Rate</p>
+                    <p class="text-3xl font-bold" id="engagement-rate">0%</p>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full">
+                    <i class="fa-solid fa-heart text-green-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Videos Gesamt</p>
+                    <p class="text-3xl font-bold" id="total-videos">0</p>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full">
+                    <i class="fa-solid fa-video text-purple-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm">Umsatz</p>
+                    <p class="text-3xl font-bold" id="total-revenue">0?</p>
+                </div>
+                <div class="bg-yellow-100 p-3 rounded-full">
+                    <i class="fa-solid fa-euro-sign text-yellow-600 text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Videos -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold">Top Videos</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Titel</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marke</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Views</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Likes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Engagement</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Datum</th>
+                    </tr>
+                </thead>
+                <tbody id="top-videos-table" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i>Lade Daten...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Brand Performance -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-bold">Brand Performance</h2>
+        </div>
+        <div class="p-6">
+            <div id="brand-performance" class="space-y-4">
+                <div class="text-center text-gray-500 py-12">
+                    <i class="fa-solid fa-spinner fa-spin text-4xl mb-4"></i>
+                    <p>Lade Brand-Daten...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let analytics = null;
+
+async function loadData() {
+    try {
+        const data = await apiCall('/api/analytics/overview');
+        analytics = data;
+        renderStats();
+        renderTopVideos();
+        renderBrandPerformance();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+function renderStats() {
+    if (!analytics) return;
+    
+    document.getElementById('total-views').textContent = formatNumber(analytics.total_views || 0);
+    document.getElementById('engagement-rate').textContent = ((analytics.engagement_rate || 0) * 100).toFixed(1) + '%';
+    document.getElementById('total-videos').textContent = formatNumber(analytics.total_videos || 0);
+    document.getElementById('total-revenue').textContent = formatCurrency(analytics.total_revenue || 0);
+}
+
+function renderTopVideos() {
+    const tbody = document.getElementById('top-videos-table');
+    
+    if (!analytics || !analytics.top_videos || analytics.top_videos.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                    <i class="fa-solid fa-inbox text-4xl text-gray-300 mb-2"></i>
+                    <p>Keine Daten vorhanden</p>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = analytics.top_videos.map(video => {
+        const engagement = video.views > 0 
+            ? ((video.likes + video.comments) / video.views * 100).toFixed(1)
+            : 0;
+        
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div class="font-medium">${truncate(video.title, 50)}</div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">${video.brand_name}</td>
+                <td class="px-6 py-4 text-sm">${formatNumber(video.views)}</td>
+                <td class="px-6 py-4 text-sm">${formatNumber(video.likes)}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs rounded-full ${engagement > 5 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                        ${engagement}%
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">${formatDate(video.created_at)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderBrandPerformance() {
+    const container = document.getElementById('brand-performance');
+    
+    if (!analytics || !analytics.brand_performance || analytics.brand_performance.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-gray-500 py-12">
+                <i class="fa-solid fa-inbox text-4xl text-gray-300 mb-2"></i>
+                <p>Keine Brand-Daten vorhanden</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = analytics.brand_performance.map(brand => {
+        const maxViews = Math.max(...analytics.brand_performance.map(b => b.total_views));
+        const percentage = maxViews > 0 ? (brand.total_views / maxViews * 100) : 0;
+        
+        return `
+            <div class="border-b border-gray-200 pb-4 last:border-0">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="font-bold">${brand.brand_name}</h3>
+                    <span class="text-sm text-gray-600">${formatNumber(brand.total_views)} Views</span>
+                </div>
+                <div class="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <span><i class="fa-solid fa-video mr-1"></i> ${brand.video_count} Videos</span>
+                    <span><i class="fa-solid fa-heart mr-1"></i> ${formatNumber(brand.total_likes)} Likes</span>
+                    <span><i class="fa-solid fa-comment mr-1"></i> ${formatNumber(brand.total_comments)} Kommentare</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-blue-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+{% endblock %}

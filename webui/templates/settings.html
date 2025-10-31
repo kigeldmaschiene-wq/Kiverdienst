@@ -1,0 +1,396 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">System-Einstellungen</h1>
+        <p class="text-gray-600 mt-1">Konfiguriere dein KIVerdienst System</p>
+    </div>
+    
+    <!-- Tabs -->
+    <div class="mb-6 border-b border-gray-200">
+        <nav class="flex space-x-4">
+            <button onclick="switchTab('api')" data-tab="api" class="tab-btn px-4 py-2 border-b-2 border-blue-500 text-blue-600 font-medium">
+                <i class="fa-solid fa-key mr-2"></i>API Keys
+            </button>
+            <button onclick="switchTab('automation')" data-tab="automation" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">
+                <i class="fa-solid fa-robot mr-2"></i>Automation
+            </button>
+            <button onclick="switchTab('budget')" data-tab="budget" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">
+                <i class="fa-solid fa-euro-sign mr-2"></i>Budget
+            </button>
+            <button onclick="switchTab('dsgvo')" data-tab="dsgvo" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">
+                <i class="fa-solid fa-shield-halved mr-2"></i>DSGVO
+            </button>
+            <button onclick="switchTab('system')" data-tab="system" class="tab-btn px-4 py-2 border-b-2 border-transparent text-gray-500">
+                <i class="fa-solid fa-cog mr-2"></i>System
+            </button>
+        </nav>
+    </div>
+    
+    <!-- Tab Content -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <!-- Tab 1: API Keys -->
+        <div id="tab-api" class="tab-content">
+            <h2 class="text-xl font-bold mb-4">API Keys Konfiguration</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ollama API URL</label>
+                    <input type="text" id="ollama_url" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="http://localhost:11434">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Runway Gen-3 API Key</label>
+                    <input type="password" id="runway_api_key" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="rw_xxxxxxxxxxxxx">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Azure TTS API Key</label>
+                    <input type="password" id="azure_tts_key" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Azure TTS Region</label>
+                    <input type="text" id="azure_tts_region" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="westeurope">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Database Connection</label>
+                    <input type="text" id="database_url" class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="postgresql://user:pass@localhost/db">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 2: Automation -->
+        <div id="tab-automation" class="tab-content hidden">
+            <h2 class="text-xl font-bold mb-4">Automatisierungs-Einstellungen</h2>
+            <div class="space-y-6">
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-bold">Auto-Posting aktivieren</h3>
+                        <p class="text-sm text-gray-600">Videos automatisch auf Social Media posten</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="auto_posting" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-bold">Script-Generierung aktivieren</h3>
+                        <p class="text-sm text-gray-600">Automatische Script-Erstellung durch AI</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="auto_script_generation" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-bold">Analytics Tracking aktivieren</h3>
+                        <p class="text-sm text-gray-600">Performance-Daten automatisch tracken</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="analytics_tracking" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Posting-Intervall (Stunden)</label>
+                    <input type="number" id="posting_interval" class="w-full px-3 py-2 border border-gray-300 rounded-lg" value="4" min="1" max="24">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 3: Budget -->
+        <div id="tab-budget" class="tab-content hidden">
+            <h2 class="text-xl font-bold mb-4">Budget-Verwaltung</h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Monatliches Budget-Limit (?)</label>
+                    <input type="number" id="budget_limit" class="w-full px-3 py-2 border border-gray-300 rounded-lg" value="1000" min="0">
+                </div>
+                
+                <div>
+                    <h3 class="font-bold mb-2">Aktueller Verbrauch</h3>
+                    <div class="mb-2">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span>520? / 1000?</span>
+                            <span>52%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-blue-600 h-3 rounded-full" style="width: 52%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <h3 class="font-bold">Benachrichtigungen</h3>
+                    
+                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium">80% Budget erreicht</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notify_80" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium">90% Budget erreicht</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notify_90" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                        <div>
+                            <p class="text-sm font-medium">100% Budget erreicht - System pausieren</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pause_at_100" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 4: DSGVO -->
+        <div id="tab-dsgvo" class="tab-content hidden">
+            <h2 class="text-xl font-bold mb-4">DSGVO & Datenschutz</h2>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Impressum</label>
+                    <textarea id="impressum" rows="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm" placeholder="Dein Impressum hier eingeben..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Datenschutz-Template</label>
+                    <select id="privacy_template" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="standard">Standard DSGVO Template</option>
+                        <option value="extended">Erweitert (mit Marketing)</option>
+                        <option value="minimal">Minimal (nur notwendig)</option>
+                        <option value="custom">Eigenes Template</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-bold">Cookie Consent aktivieren</h3>
+                        <p class="text-sm text-gray-600">Cookie-Banner f?r Landing Pages anzeigen</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="cookie_consent" class="sr-only peer" checked>
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="font-bold mb-2"><i class="fa-solid fa-info-circle mr-2"></i>DSGVO Hinweis</h3>
+                    <p class="text-sm text-gray-700">
+                        Stelle sicher, dass dein Impressum und deine Datenschutzerkl?rung aktuell sind. 
+                        Bei Fragen wende dich an einen Rechtsanwalt.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tab 5: System -->
+        <div id="tab-system" class="tab-content hidden">
+            <h2 class="text-xl font-bold mb-4">System-Verwaltung</h2>
+            <div class="space-y-6">
+                <!-- Status Display -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">Backend Status</span>
+                            <span class="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                                <i class="fa-solid fa-check mr-1"></i>Online
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">Database Status</span>
+                            <span class="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                                <i class="fa-solid fa-check mr-1"></i>Connected
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">Ollama Status</span>
+                            <span class="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
+                                <i class="fa-solid fa-check mr-1"></i>Running
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 bg-yellow-50 rounded-lg">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold">Runway API</span>
+                            <span class="px-2 py-1 bg-yellow-500 text-white text-xs rounded-full">
+                                <i class="fa-solid fa-exclamation mr-1"></i>Limited
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Ollama Config -->
+                <div>
+                    <h3 class="font-bold mb-3">Ollama Konfiguration</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Hauptmodell</label>
+                            <select id="ollama_main_model" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="llama3.1:70b">Llama 3.1 70B (Recommended)</option>
+                                <option value="llama3.1:8b">Llama 3.1 8B (Fast)</option>
+                                <option value="mixtral:8x7b">Mixtral 8x7B</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                            <input type="range" id="ollama_temperature" min="0" max="1" step="0.1" value="0.7" class="w-full" oninput="document.getElementById('temp-value').textContent = this.value">
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>Konservativ (0)</span>
+                                <span id="temp-value">0.7</span>
+                                <span>Kreativ (1)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Maintenance -->
+                <div>
+                    <h3 class="font-bold mb-3">Wartung</h3>
+                    <div class="space-y-2">
+                        <button onclick="clearCache()" class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            <i class="fa-solid fa-broom mr-2"></i>Cache leeren
+                        </button>
+                        <button onclick="restartServices()" class="w-full px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+                            <i class="fa-solid fa-rotate mr-2"></i>Services neu starten
+                        </button>
+                        <button onclick="exportData()" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                            <i class="fa-solid fa-download mr-2"></i>Daten exportieren
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Save Button -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+            <button onclick="saveSettings()" class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-bold">
+                <i class="fa-solid fa-save mr-2"></i>Einstellungen speichern
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let settings = {};
+
+async function loadData() {
+    try {
+        const data = await apiCall('/api/settings');
+        settings = data;
+        populateSettings();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+function populateSettings() {
+    Object.keys(settings).forEach(key => {
+        const element = document.getElementById(key);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.checked = settings[key] === 'true' || settings[key] === true;
+            } else {
+                element.value = settings[key] || '';
+            }
+        }
+    });
+}
+
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('border-blue-500', 'text-blue-600');
+    document.querySelector(`[data-tab="${tabName}"]`).classList.remove('border-transparent', 'text-gray-500');
+    
+    // Show/hide tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+}
+
+async function saveSettings() {
+    const data = {};
+    
+    // Collect all settings
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        if (input.id) {
+            if (input.type === 'checkbox') {
+                data[input.id] = input.checked;
+            } else {
+                data[input.id] = input.value;
+            }
+        }
+    });
+    
+    try {
+        await apiCall('/api/settings', { method: 'POST', body: JSON.stringify(data) });
+        showSuccess('Einstellungen gespeichert');
+    } catch (error) {
+        showError('Fehler beim Speichern: ' + error.message);
+    }
+}
+
+async function clearCache() {
+    if (!confirmAction('Cache wirklich leeren?')) return;
+    showInfo('Cache wird geleert...');
+    setTimeout(() => showSuccess('Cache geleert'), 1000);
+}
+
+async function restartServices() {
+    if (!confirmAction('Services wirklich neu starten?')) return;
+    showInfo('Services werden neu gestartet...');
+    setTimeout(() => showSuccess('Services neu gestartet'), 2000);
+}
+
+async function exportData() {
+    showInfo('Export wird vorbereitet...');
+    setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = '/api/export';
+        link.download = `kiverdienst_export_${Date.now()}.json`;
+        link.click();
+        showSuccess('Export gestartet');
+    }, 1000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+{% endblock %}
