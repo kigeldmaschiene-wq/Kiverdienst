@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - KIVerdienst V2{% endblock %}
+{% block header %}Performance Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Overview Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-600 mb-1">Gesamt Views</p>
+            <p id="analyticsViews" class="text-3xl font-bold text-gray-900">0</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-600 mb-1">? Engagement</p>
+            <p id="analyticsEngagement" class="text-3xl font-bold text-gray-900">0%</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-600 mb-1">Videos Gesamt</p>
+            <p id="analyticsVideos" class="text-3xl font-bold text-gray-900">0</p>
+        </div>
+        <div class="bg-white rounded-lg shadow p-6">
+            <p class="text-sm text-gray-600 mb-1">Umsatz</p>
+            <p id="analyticsRevenue" class="text-3xl font-bold text-gray-900">0?</p>
+        </div>
+    </div>
+    
+    <!-- Top Videos -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Top Performing Videos</h3>
+        <div id="topVideos">
+            <p class="text-gray-500 text-center py-4">Lade Daten...</p>
+        </div>
+    </div>
+    
+    <!-- Trending Topics -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Trending Topics</h3>
+        <div id="trendingTopics">
+            <p class="text-gray-500 text-center py-4">Lade Trends...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadAnalytics() {
+        try {
+            const data = await api('/api/analytics/overview');
+            
+            document.getElementById('analyticsViews').textContent = (data.total_views || 0).toLocaleString('de-DE');
+            document.getElementById('analyticsEngagement').textContent = '0%';
+            document.getElementById('analyticsVideos').textContent = data.videos || 0;
+            document.getElementById('analyticsRevenue').textContent = `${(data.revenue || 0).toFixed(2)}?`;
+            
+            // Top videos
+            const topContainer = document.getElementById('topVideos');
+            if (data.top_videos && data.top_videos.length > 0) {
+                topContainer.innerHTML = data.top_videos.map(video => `
+                    <div class="flex items-center justify-between py-3 border-b last:border-0">
+                        <div class="flex-1">
+                            <p class="font-semibold">${video.title || 'Ohne Titel'}</p>
+                            <p class="text-sm text-gray-600">${video.brand_name || 'Unbekannt'}</p>
+                        </div>
+                        <div class="flex gap-4 text-sm">
+                            <span>?? ${(video.views || 0).toLocaleString('de-DE')}</span>
+                            <span>?? ${video.likes || 0}</span>
+                            <span>?? ${video.comments || 0}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                topContainer.innerHTML = '<p class="text-gray-500 text-center py-4">Keine Daten verf?gbar</p>';
+            }
+        } catch (error) {
+            console.error('Analytics load failed:', error);
+        }
+        
+        // Load trends
+        try {
+            const trends = await api('/api/analytics/trends');
+            const trendsContainer = document.getElementById('trendingTopics');
+            
+            if (trends && trends.length > 0) {
+                trendsContainer.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        ${trends.map(trend => `
+                            <div class="border rounded-lg p-4">
+                                <p class="font-semibold mb-1">${trend.topic}</p>
+                                <p class="text-sm text-gray-600 mb-2">${trend.hashtags || ''}</p>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm text-gray-500">${trend.niche_name || 'Allgemein'}</span>
+                                    <span class="text-sm font-semibold text-green-600">? ${(trend.trend_score || 0).toFixed(1)}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                trendsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">Keine Trends verf?gbar</p>';
+            }
+        } catch (error) {
+            console.error('Trends load failed:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAnalytics();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Videos - KIVerdienst V2{% endblock %}
+{% block header %}Video Verwaltung{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Generate Video Form -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Neues Video generieren</h3>
+        <form onsubmit="generateVideo(event)" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Marke *</label>
+                <select name="brand_id" required id="brandSelect" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Marke w?hlen...</option>
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Thema *</label>
+                <input type="text" name="topic" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="z.B. KI Tools f?r Content Creation">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Plattform</label>
+                <select name="platform" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="tiktok">TikTok</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube Shorts</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                Video generieren
+            </button>
+        </form>
+        
+        <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+            <p class="text-sm text-blue-900">
+                <strong>Hinweis:</strong> Die Video-Generierung dauert ca. 2-5 Minuten. Du kannst den Fortschritt hier verfolgen.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Videos List -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold">Alle Videos</h3>
+                <button onclick="loadVideos()" class="text-blue-600 hover:text-blue-700 text-sm">
+                    ?? Aktualisieren
+                </button>
+            </div>
+            
+            <div id="videosContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-500 text-center py-8 col-span-2">Lade Videos...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        // Load brands for dropdown
+        try {
+            const brands = await api('/api/brands');
+            const select = document.getElementById('brandSelect');
+            brands.forEach(brand => {
+                const option = document.createElement('option');
+                option.value = brand.id;
+                option.textContent = brand.name;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Failed to load brands:', error);
+        }
+        
+        loadVideos();
+    });
+</script>
+{% endblock %}

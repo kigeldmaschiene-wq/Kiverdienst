@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Social Accounts - KIVerdienst V2{% endblock %}
+{% block header %}Social Media Accounts{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold">Verbundene Accounts</h3>
+        <button onclick="loadAccounts()" class="text-blue-600 hover:text-blue-700 text-sm">
+            ?? Aktualisieren
+        </button>
+    </div>
+    
+    <div id="accountsContainer">
+        <p class="text-gray-500 text-center py-8">Lade Accounts...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadAccounts() {
+        try {
+            const accounts = await api('/api/accounts');
+            const container = document.getElementById('accountsContainer');
+            
+            if (accounts.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Keine Accounts vorhanden.</p>';
+                return;
+            }
+            
+            // Group by platform
+            const platforms = {
+                tiktok: accounts.filter(a => a.platform === 'tiktok'),
+                instagram: accounts.filter(a => a.platform === 'instagram'),
+                youtube: accounts.filter(a => a.platform === 'youtube')
+            };
+            
+            container.innerHTML = `
+                <div class="space-y-6">
+                    ${Object.entries(platforms).map(([platform, accs]) => `
+                        <div>
+                            <h4 class="text-lg font-semibold mb-3 capitalize flex items-center">
+                                ${platform === 'tiktok' ? '?' : platform === 'instagram' ? '??' : '??'}
+                                ${platform.charAt(0).toUpperCase() + platform.slice(1)}
+                                <span class="ml-2 text-sm text-gray-500">(${accs.length})</span>
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                ${accs.map(acc => `
+                                    <div class="border rounded-lg p-4">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <p class="font-semibold">@${acc.username}</p>
+                                            <span class="px-2 py-1 text-xs rounded ${
+                                                acc.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            }">
+                                                ${acc.status}
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600">${acc.brand_name || 'Keine Marke'}</p>
+                                        <p class="text-sm text-gray-600 mt-2">?? ${(acc.followers || 0).toLocaleString('de-DE')} Follower</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (error) {
+            console.error('Accounts load failed:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAccounts();
+    });
+</script>
+{% endblock %}

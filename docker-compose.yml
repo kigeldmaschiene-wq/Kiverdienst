@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kiverdienst_v2_postgres
+    environment:
+      POSTGRES_USER: kiverdienst
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: kiverdienst_v2
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kiverdienst"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - kiverdienst_network
+
+  backend:
+    build: ./backend
+    container_name: kiverdienst_v2_backend
+    environment:
+      DATABASE_URL: postgresql://kiverdienst:${DB_PASSWORD}@postgres:5432/kiverdienst_v2
+      SECRET_KEY: ${SECRET_KEY}
+      OLLAMA_URL: http://135.181.129.240:11434
+      OLLAMA_MODEL_LARGE: llama3.1:70b
+      OLLAMA_MODEL_FAST: llama3.1:8b-instruct-q8_0
+      RUNWAY_API_KEY: ${RUNWAY_API_KEY:-}
+      AZURE_TTS_KEY: ${AZURE_TTS_KEY:-}
+      AZURE_TTS_REGION: westeurope
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./database:/app/database
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - kiverdienst_network
+
+  frontend:
+    build: ./frontend
+    container_name: kiverdienst_v2_frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - kiverdienst_network
+
+volumes:
+  postgres_data:
+
+networks:
+  kiverdienst_network:
+    driver: bridge
