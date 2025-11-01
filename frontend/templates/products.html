@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Produkte - KIVerdienst V2{% endblock %}
+{% block header %}Produkte & Affiliates{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold">Alle Produkte</h3>
+        <button onclick="loadProducts()" class="text-blue-600 hover:text-blue-700 text-sm">
+            ?? Aktualisieren
+        </button>
+    </div>
+    
+    <div id="productsContainer">
+        <p class="text-gray-500 text-center py-8">Lade Produkte...</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-6 mt-6">
+    <h3 class="text-xl font-semibold mb-4">Sales Report</h3>
+    <div id="salesReport">
+        <p class="text-gray-500 text-center py-8">Lade Verkaufsdaten...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadProducts() {
+        try {
+            const products = await api('/api/products');
+            const container = document.getElementById('productsContainer');
+            
+            if (products.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">Keine Produkte vorhanden.</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${products.map(product => `
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold">${product.name}</h4>
+                                <span class="px-2 py-1 text-xs rounded ${
+                                    product.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }">
+                                    ${product.active ? 'Aktiv' : 'Inaktiv'}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">${product.description || 'Keine Beschreibung'}</p>
+                            <div class="space-y-1 text-sm">
+                                <p><strong>Preis:</strong> ${product.price ? product.price.toFixed(2) + '?' : 'N/A'}</p>
+                                <p><strong>Provision:</strong> ${product.commission_rate ? (product.commission_rate * 100).toFixed(0) + '%' : 'N/A'}</p>
+                                <p><strong>Verk?ufe:</strong> ${product.sales_count || 0}</p>
+                                <p><strong>Gesamt:</strong> ${product.total_commission ? product.total_commission.toFixed(2) + '?' : '0?'}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } catch (error) {
+            console.error('Products load failed:', error);
+        }
+        
+        // Load sales report
+        try {
+            const sales = await api('/api/products/sales');
+            const salesContainer = document.getElementById('salesReport');
+            
+            salesContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Gesamt Umsatz</p>
+                        <p class="text-2xl font-bold text-blue-600">${(sales.total_sales || 0).toFixed(2)}?</p>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Gesamt Provision</p>
+                        <p class="text-2xl font-bold text-green-600">${(sales.total_commission || 0).toFixed(2)}?</p>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Anzahl Verk?ufe</p>
+                        <p class="text-2xl font-bold text-purple-600">${sales.by_product?.reduce((sum, p) => sum + (p.sales_count || 0), 0) || 0}</p>
+                    </div>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Sales report load failed:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+    });
+</script>
+{% endblock %}

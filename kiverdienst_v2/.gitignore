@@ -1,0 +1,42 @@
+# KIVerdienst V2 - Git Ignore
+
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+postgres_data/
+
+# Docker
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Data
+backend/data/*
+!backend/data/.gitkeep
+
+# Temporary
+tmp/
+temp/
+*.tmp

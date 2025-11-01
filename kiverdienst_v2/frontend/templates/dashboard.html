@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-gray-600 mt-1">?berblick ?ber dein Content-System</p>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Brands Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Aktive Marken</p>
+                    <p id="brands-count" class="text-3xl font-bold text-gray-900">-</p>
+                </div>
+                <div class="bg-blue-100 rounded-full p-3">
+                    <i class="fa-solid fa-tag text-2xl text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Videos Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Videos Gesamt</p>
+                    <p id="videos-count" class="text-3xl font-bold text-gray-900">-</p>
+                </div>
+                <div class="bg-green-100 rounded-full p-3">
+                    <i class="fa-solid fa-video text-2xl text-green-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Views Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Total Views</p>
+                    <p id="total-views" class="text-3xl font-bold text-gray-900">-</p>
+                </div>
+                <div class="bg-purple-100 rounded-full p-3">
+                    <i class="fa-solid fa-eye text-2xl text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Revenue Card -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Umsatz (30 Tage)</p>
+                    <p id="revenue" class="text-3xl font-bold text-gray-900">-</p>
+                </div>
+                <div class="bg-yellow-100 rounded-full p-3">
+                    <i class="fa-solid fa-euro-sign text-2xl text-yellow-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Schnellaktionen</h3>
+            <div class="space-y-3">
+                <a href="/brands" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-tag text-2xl text-blue-600 mr-3"></i>
+                        <div>
+                            <p class="font-semibold">Neue Marke erstellen</p>
+                            <p class="text-sm text-gray-600">F?ge eine neue Brand hinzu</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/videos" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-video text-2xl text-green-600 mr-3"></i>
+                        <div>
+                            <p class="font-semibold">Video generieren</p>
+                            <p class="text-sm text-gray-600">Erstelle neuen Content</p>
+                        </div>
+                    </div>
+                </a>
+                
+                <a href="/analytics" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-chart-line text-2xl text-purple-600 mr-3"></i>
+                        <div>
+                            <p class="font-semibold">Analytics anzeigen</p>
+                            <p class="text-sm text-gray-600">Performance analysieren</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">System Status</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between py-2 border-b">
+                    <span class="text-gray-700">Backend</span>
+                    <span class="text-green-600 font-semibold flex items-center">
+                        <i class="fa-solid fa-check-circle mr-1"></i> Online
+                    </span>
+                </div>
+                <div class="flex items-center justify-between py-2 border-b">
+                    <span class="text-gray-700">Datenbank</span>
+                    <span class="text-green-600 font-semibold flex items-center">
+                        <i class="fa-solid fa-check-circle mr-1"></i> Verbunden
+                    </span>
+                </div>
+                <div class="flex items-center justify-between py-2 border-b">
+                    <span class="text-gray-700">Ollama AI</span>
+                    <span class="text-green-600 font-semibold flex items-center">
+                        <i class="fa-solid fa-check-circle mr-1"></i> Verf?gbar
+                    </span>
+                </div>
+                <div class="flex items-center justify-between py-2">
+                    <span class="text-gray-700">Version</span>
+                    <span class="text-gray-600">v2.0.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDashboardStats() {
+    try {
+        const response = await fetch('/api/dashboard/stats');
+        if (!response.ok) throw new Error('Failed to load stats');
+        
+        const data = await response.json();
+        
+        document.getElementById('brands-count').textContent = data.brands_count || 0;
+        document.getElementById('videos-count').textContent = data.videos_count || 0;
+        document.getElementById('total-views').textContent = formatNumber(data.total_views || 0);
+        document.getElementById('revenue').textContent = formatCurrency(data.revenue || 0);
+    } catch (error) {
+        console.error('Error loading stats:', error);
+        showError('Fehler beim Laden der Statistiken');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadDashboardStats);
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}KIVerdienst V2{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome 6 FREE -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="md:hidden fixed top-4 left-4 z-50 bg-gray-800 text-white p-3 rounded-lg shadow-lg">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+    
+    <!-- Main Container -->
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-gray-800 text-white hidden md:block fixed md:relative h-full z-40">
+            <!-- Logo -->
+            <div class="p-4 border-b border-gray-700">
+                <h1 class="text-xl font-bold">?? KIVerdienst V2</h1>
+                <p class="text-xs text-gray-400">Autonomous Content System</p>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="mt-4 overflow-y-auto h-[calc(100vh-180px)]">
+                <a href="/dashboard" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-home w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                <a href="/brands" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-tag w-5"></i>
+                    <span class="ml-3">Marken</span>
+                </a>
+                <a href="/characters" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-user w-5"></i>
+                    <span class="ml-3">Characters</span>
+                </a>
+                <a href="/videos" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-video w-5"></i>
+                    <span class="ml-3">Videos</span>
+                </a>
+                <a href="/accounts" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-share-nodes w-5"></i>
+                    <span class="ml-3">Social Accounts</span>
+                </a>
+                <a href="/analytics" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-chart-line w-5"></i>
+                    <span class="ml-3">Analytics</span>
+                </a>
+                <a href="/products" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-shopping-bag w-5"></i>
+                    <span class="ml-3">Produkte</span>
+                </a>
+                <a href="/leads" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-envelope w-5"></i>
+                    <span class="ml-3">Leads</span>
+                </a>
+                <a href="/settings" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-gear w-5"></i>
+                    <span class="ml-3">Einstellungen</span>
+                </a>
+                <a href="/logs" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-file-lines w-5"></i>
+                    <span class="ml-3">Logs</span>
+                </a>
+                <a href="/chat" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-comments w-5"></i>
+                    <span class="ml-3">Mastermind Chat</span>
+                </a>
+                <a href="/landingpages" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-globe w-5"></i>
+                    <span class="ml-3">Landing Pages</span>
+                </a>
+                <a href="/calendar" class="flex items-center px-4 py-3 hover:bg-gray-700 transition">
+                    <i class="fa-solid fa-calendar w-5"></i>
+                    <span class="ml-3">Kalender</span>
+                </a>
+            </nav>
+            
+            <!-- System Status -->
+            <div class="absolute bottom-0 w-64 p-4 border-t border-gray-700 bg-gray-800">
+                <div class="flex items-center text-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                    <span>System Online</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto md:ml-0">
+            <div class="container mx-auto px-4 md:px-6 py-6 md:py-8">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

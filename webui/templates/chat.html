@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Mastermind Chat - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Chat Area -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow flex flex-col" style="height: calc(100vh - 200px);">
+                <!-- Chat Header -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                            AI
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-lg">Mastermind Agent</h2>
+                            <p class="text-sm text-gray-600">Dein pers?nlicher Business-Coach</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Messages -->
+                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div class="flex">
+                        <div class="max-w-3xl bg-gray-100 rounded-lg p-4">
+                            <p class="text-sm text-gray-800">
+                                ?? Hallo! Ich bin dein Mastermind Agent. Ich helfe dir bei:
+                            </p>
+                            <ul class="list-disc list-inside text-sm text-gray-800 mt-2 space-y-1">
+                                <li>Performance-Analysen deiner Marken</li>
+                                <li>Content-Strategien und Themen-Ideen</li>
+                                <li>Video-Optimierung und Trends</li>
+                                <li>Revenue-Optimierung</li>
+                                <li>System-?berwachung</li>
+                            </ul>
+                            <p class="text-sm text-gray-800 mt-2">
+                                Was kann ich f?r dich tun?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input -->
+                <div class="p-4 border-t border-gray-200">
+                    <form id="chat-form" onsubmit="sendMessage(event)" class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="message-input" 
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" 
+                            placeholder="Stelle deine Frage..."
+                            required
+                        >
+                        <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions Sidebar -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow p-4">
+                <h3 class="font-bold mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                    <button onclick="quickAction('performance')" class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition">
+                        <i class="fa-solid fa-chart-line text-blue-600 mr-2"></i>
+                        <span class="text-sm font-medium">Performance-Analyse</span>
+                    </button>
+                    <button onclick="quickAction('strategy')" class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition">
+                        <i class="fa-solid fa-lightbulb text-green-600 mr-2"></i>
+                        <span class="text-sm font-medium">Content-Strategie</span>
+                    </button>
+                    <button onclick="quickAction('ideas')" class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition">
+                        <i class="fa-solid fa-wand-magic-sparkles text-purple-600 mr-2"></i>
+                        <span class="text-sm font-medium">Ideen generieren</span>
+                    </button>
+                    <button onclick="quickAction('schedule')" class="w-full text-left px-4 py-3 bg-orange-50 hover:bg-orange-100 rounded-lg transition">
+                        <i class="fa-solid fa-calendar text-orange-600 mr-2"></i>
+                        <span class="text-sm font-medium">Videos planen</span>
+                    </button>
+                    <button onclick="quickAction('revenue')" class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition">
+                        <i class="fa-solid fa-euro-sign text-yellow-600 mr-2"></i>
+                        <span class="text-sm font-medium">Revenue-Report</span>
+                    </button>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h4 class="font-bold text-sm mb-2">?? Tipp</h4>
+                    <p class="text-xs text-gray-600">
+                        Du kannst den Mastermind nach spezifischen Daten fragen, z.B. "Welche Videos performen am besten?" oder "Generiere 10 neue Themen f?r TechSnap".
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let messages = [];
+
+async function sendMessage(event) {
+    event.preventDefault();
+    
+    const input = document.getElementById('message-input');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    // Add user message
+    addMessage(message, 'user');
+    input.value = '';
+    
+    // Show typing indicator
+    addTypingIndicator();
+    
+    try {
+        const response = await apiCall('/api/mastermind/chat', {
+            method: 'POST',
+            body: JSON.stringify({ message })
+        });
+        
+        removeTypingIndicator();
+        addMessage(response.reply, 'bot');
+    } catch (error) {
+        removeTypingIndicator();
+        addMessage('Entschuldigung, ich konnte deine Anfrage nicht verarbeiten. Bitte versuche es erneut.', 'bot');
+        showError('Fehler: ' + error.message);
+    }
+}
+
+function addMessage(text, sender) {
+    const container = document.getElementById('chat-messages');
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.className = sender === 'user' ? 'flex justify-end' : 'flex';
+    
+    messageDiv.innerHTML = `
+        <div class="max-w-3xl ${sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg p-4">
+            <p class="text-sm whitespace-pre-wrap">${escapeHtml(text)}</p>
+        </div>
+    `;
+    
+    container.appendChild(messageDiv);
+    container.scrollTop = container.scrollHeight;
+}
+
+function addTypingIndicator() {
+    const container = document.getElementById('chat-messages');
+    
+    const indicator = document.createElement('div');
+    indicator.className = 'flex';
+    indicator.id = 'typing-indicator';
+    indicator.innerHTML = `
+        <div class="bg-gray-100 rounded-lg p-4">
+            <div class="flex space-x-2">
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(indicator);
+    container.scrollTop = container.scrollHeight;
+}
+
+function removeTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+}
+
+async function quickAction(action) {
+    const prompts = {
+        'performance': 'Analysiere die Performance meiner Marken und gib mir die wichtigsten Insights.',
+        'strategy': 'Erstelle eine Content-Strategie f?r die n?chsten 7 Tage.',
+        'ideas': 'Generiere 10 neue Video-Ideen basierend auf aktuellen Trends.',
+        'schedule': 'Erstelle einen optimalen Posting-Plan f?r diese Woche.',
+        'revenue': 'Erstelle einen detaillierten Revenue-Report mit Optimierungsvorschl?gen.'
+    };
+    
+    const message = prompts[action] || '';
+    if (message) {
+        document.getElementById('message-input').value = message;
+        document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    // Focus input
+    document.getElementById('message-input').focus();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Logs - KIVerdienst V2{% endblock %}
+{% block header %}System Logs{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-semibold">Aktuelle Logs</h3>
+        <div class="flex gap-2">
+            <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <option value="all">Alle Levels</option>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+            </select>
+            <button onclick="refreshLogs()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                ?? Aktualisieren
+            </button>
+        </div>
+    </div>
+    
+    <div id="logsContainer" class="bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-sm h-[600px] overflow-y-auto">
+        <p class="text-gray-400">Lade Logs...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function refreshLogs() {
+        const container = document.getElementById('logsContainer');
+        const sampleLogs = [
+            '[2025-10-31 10:23:45] INFO: System started successfully',
+            '[2025-10-31 10:23:46] INFO: Database connection established',
+            '[2025-10-31 10:23:47] INFO: Ollama AI service connected',
+            '[2025-10-31 10:24:12] INFO: Brand "KI Hustle" activated',
+            '[2025-10-31 10:24:35] INFO: Video generation started (ID: 1)',
+            '[2025-10-31 10:25:10] INFO: ContentGenerator agent: Script created',
+            '[2025-10-31 10:25:45] INFO: VideoWorker agent: Assembly started',
+            '[2025-10-31 10:27:20] INFO: Video generation completed (ID: 1)',
+            '[2025-10-31 10:27:21] INFO: Analytics data updated',
+            '[2025-10-31 10:30:00] INFO: Health check: All systems operational'
+        ];
+        
+        container.innerHTML = sampleLogs.reverse().map(log => {
+            let className = 'text-gray-300';
+            if (log.includes('ERROR')) className = 'text-red-400';
+            if (log.includes('WARNING')) className = 'text-yellow-400';
+            if (log.includes('INFO')) className = 'text-blue-400';
+            
+            return `<p class="${className}">${log}</p>`;
+        }).join('');
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        refreshLogs();
+        // Auto-refresh every 10 seconds
+        setInterval(refreshLogs, 10000);
+    });
+</script>
+{% endblock %}

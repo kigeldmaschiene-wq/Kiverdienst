@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block title %}Leads - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Lead Management</h1>
+            <p class="text-gray-600 mt-1">Verwalte deine Email-Leads und Sequenzen</p>
+        </div>
+        <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i>Lead hinzuf?gen
+        </button>
+    </div>
+    
+    <!-- Leads Table -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quelle</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marke</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Erstellt</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="leads-table" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            <i class="fa-solid fa-spinner fa-spin mr-2"></i>Lade Leads...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Create/Edit Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold" id="modal-title">Lead hinzuf?gen</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="form" onsubmit="handleSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                        <input type="text" id="name" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Quelle *</label>
+                        <input type="text" id="source" name="source" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="z.B. Landing Page, TikTok Bio">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Marke</label>
+                        <select id="brand_id" name="brand_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Keine Marke</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Notizen</label>
+                        <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let leads = [];
+let brands = [];
+let editingId = null;
+
+async function loadBrands() {
+    try {
+        const data = await apiCall('/api/brands');
+        brands = data;
+        const select = document.getElementById('brand_id');
+        if (select) {
+            select.innerHTML = '<option value="">Keine Marke</option>' + 
+                brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading brands:', error);
+    }
+}
+
+async function loadData() {
+    try {
+        const data = await apiCall('/api/leads');
+        leads = data;
+        renderItems();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+function renderItems() {
+    const tbody = document.getElementById('leads-table');
+    
+    if (leads.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-6 py-12 text-center">
+                    <i class="fa-solid fa-inbox text-6xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 mb-4">Noch keine Leads vorhanden</p>
+                    <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Ersten Lead hinzuf?gen
+                    </button>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = leads.map(lead => {
+        const statusColors = {
+            'new': 'bg-blue-100 text-blue-800',
+            'contacted': 'bg-yellow-100 text-yellow-800',
+            'converted': 'bg-green-100 text-green-800',
+            'cold': 'bg-gray-100 text-gray-800'
+        };
+        
+        return `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4">
+                    <div class="flex items-center">
+                        <i class="fa-solid fa-envelope text-gray-400 mr-2"></i>
+                        <span class="font-medium">${lead.email}</span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-sm">${lead.name || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">${lead.source || '-'}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">${lead.brand_name || '-'}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs rounded-full ${statusColors[lead.status] || 'bg-gray-100 text-gray-800'}">
+                        ${lead.status || 'new'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">${formatDate(lead.created_at)}</td>
+                <td class="px-6 py-4">
+                    <button onclick="deleteItem(${lead.id})" class="text-red-500 hover:text-red-700">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function openCreateModal() {
+    editingId = null;
+    document.getElementById('form').reset();
+    document.getElementById('modal-title').textContent = 'Lead hinzuf?gen';
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
+
+async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    data.status = 'new';
+    
+    try {
+        await apiCall('/api/leads', { method: 'POST', body: JSON.stringify(data) });
+        showSuccess('Lead hinzugef?gt');
+        closeModal();
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+async function deleteItem(id) {
+    if (!confirmAction('Lead wirklich l?schen?')) return;
+    
+    try {
+        await apiCall(`/api/leads/${id}`, { method: 'DELETE' });
+        showSuccess('Lead gel?scht');
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadBrands();
+    loadData();
+});
+</script>
+{% endblock %}

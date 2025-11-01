@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Characters - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Character Bibliothek</h1>
+            <p class="text-gray-600 mt-1">Verwalte deine AI Characters und Clip-Libraries</p>
+        </div>
+        <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i>Neuer Character
+        </button>
+    </div>
+    
+    <!-- Characters Grid -->
+    <div id="content-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Characters werden hier eingef?gt -->
+    </div>
+    
+    <!-- Create/Edit Modal -->
+    <div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold" id="modal-title">Neuer Character</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <form id="form" onsubmit="handleSubmit(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                        <input type="text" id="name" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Marke *</label>
+                        <select id="brand_id" name="brand_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="">Marke w?hlen...</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Alter</label>
+                        <input type="number" id="age" name="age" min="25" max="55" value="30" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Geschlecht *</label>
+                        <div class="flex gap-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="M?nnlich" checked class="mr-2">
+                                <span>M?nnlich</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="gender" value="Weiblich" class="mr-2">
+                                <span>Weiblich</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Style *</label>
+                        <select id="character_type" name="character_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="Professional">Professional</option>
+                            <option value="Casual">Casual</option>
+                            <option value="Creative">Creative</option>
+                            <option value="Sporty">Sporty</option>
+                            <option value="Elegant">Elegant</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Voice ID (Azure TTS)</label>
+                        <select id="voice_id" name="voice_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="de-DE-ConradNeural">Conrad (M?nnlich)</option>
+                            <option value="de-DE-KatjaNeural">Katja (Weiblich)</option>
+                            <option value="de-DE-KillianNeural">Killian (M?nnlich)</option>
+                            <option value="de-DE-AmalaNeural">Amala (Weiblich)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let characters = [];
+let brands = [];
+let editingId = null;
+
+// Load Brands for Dropdown
+async function loadBrands() {
+    try {
+        const data = await apiCall('/api/brands');
+        brands = data;
+        const select = document.getElementById('brand_id');
+        select.innerHTML = '<option value="">Marke w?hlen...</option>' + 
+            brands.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+    } catch (error) {
+        console.error('Error loading brands:', error);
+    }
+}
+
+// Load Characters
+async function loadData() {
+    try {
+        const data = await apiCall('/api/characters');
+        characters = data;
+        renderItems();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+// Render Characters
+function renderItems() {
+    const container = document.getElementById('content-container');
+    
+    if (characters.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <i class="fa-solid fa-user-plus text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-4">Noch keine Characters vorhanden</p>
+                <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Ersten Character erstellen
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = characters.map(char => `
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+            <div class="flex flex-col items-center text-center mb-4">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-3">
+                    ${char.name.charAt(0)}
+                </div>
+                <h3 class="text-lg font-bold">${char.name}</h3>
+                <p class="text-sm text-gray-600">${char.brand_name || 'Keine Marke'}</p>
+            </div>
+            
+            <div class="text-sm text-gray-600 space-y-1 mb-4">
+                <p><i class="fa-solid fa-venus-mars mr-2"></i>${char.gender || '-'}</p>
+                <p><i class="fa-solid fa-palette mr-2"></i>${char.character_type || '-'}</p>
+                <p><i class="fa-solid fa-microphone mr-2"></i>${char.voice_id || '-'}</p>
+                <p><i class="fa-solid fa-film mr-2"></i>${char.clips_count || 0} Clips</p>
+            </div>
+            
+            <div class="flex gap-2">
+                <button onclick="editItem(${char.id})" class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                    <i class="fa-solid fa-edit mr-1"></i>Bearbeiten
+                </button>
+                <button onclick="deleteItem(${char.id})" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Modal Handling
+function openCreateModal() {
+    editingId = null;
+    document.getElementById('form').reset();
+    document.getElementById('modal-title').textContent = 'Neuer Character';
+    document.getElementById('modal').classList.remove('hidden');
+}
+
+function editItem(id) {
+    editingId = id;
+    const char = characters.find(c => c.id === id);
+    if (char) {
+        document.getElementById('name').value = char.name || '';
+        document.getElementById('brand_id').value = char.brand_id || '';
+        document.getElementById('character_type').value = char.character_type || 'Professional';
+        document.getElementById('voice_id').value = char.voice_id || 'de-DE-ConradNeural';
+        if (char.gender) {
+            document.querySelector(`input[name="gender"][value="${char.gender}"]`).checked = true;
+        }
+        document.getElementById('modal-title').textContent = 'Character bearbeiten';
+        document.getElementById('modal').classList.remove('hidden');
+    }
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
+
+// Form Submit
+async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const method = editingId ? 'PUT' : 'POST';
+        const url = editingId ? `/api/characters/${editingId}` : '/api/characters';
+        
+        await apiCall(url, { method, body: JSON.stringify(data) });
+        
+        showSuccess(editingId ? 'Character aktualisiert' : 'Character erstellt');
+        closeModal();
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+// Delete Character
+async function deleteItem(id) {
+    if (!confirmAction('Character wirklich l?schen?')) return;
+    
+    try {
+        await apiCall(`/api/characters/${id}`, { method: 'DELETE' });
+        showSuccess('Character gel?scht');
+        loadData();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    loadBrands();
+    loadData();
+});
+</script>
+{% endblock %}

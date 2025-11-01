@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - KIVerdienst V2{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Stat Cards -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Aktive Marken</p>
+                <p id="brandsCount" class="text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div class="bg-blue-100 rounded-full p-3">
+                <span class="text-2xl">??</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Videos Gesamt</p>
+                <p id="videosCount" class="text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div class="bg-green-100 rounded-full p-3">
+                <span class="text-2xl">??</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Total Views</p>
+                <p id="totalViews" class="text-3xl font-bold text-gray-900">0</p>
+            </div>
+            <div class="bg-purple-100 rounded-full p-3">
+                <span class="text-2xl">???</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-600 mb-1">Umsatz (30 Tage)</p>
+                <p id="revenue" class="text-3xl font-bold text-gray-900">0?</p>
+            </div>
+            <div class="bg-yellow-100 rounded-full p-3">
+                <span class="text-2xl">??</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Videos -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Neueste Videos</h3>
+        <div id="recentVideos">
+            <p class="text-gray-500 text-center py-4">Lade Videos...</p>
+        </div>
+        <div class="mt-4">
+            <a href="/videos" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                Alle Videos anzeigen ?
+            </a>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Schnellaktionen</h3>
+        <div class="space-y-3">
+            <a href="/brands" class="block p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">??</span>
+                    <div>
+                        <p class="font-semibold">Neue Marke erstellen</p>
+                        <p class="text-sm text-gray-600">F?ge eine neue Brand hinzu</p>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/videos" class="block p-4 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">??</span>
+                    <div>
+                        <p class="font-semibold">Video generieren</p>
+                        <p class="text-sm text-gray-600">Erstelle neuen Content</p>
+                    </div>
+                </div>
+            </a>
+            
+            <a href="/analytics" class="block p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">??</span>
+                    <div>
+                        <p class="font-semibold">Analytics anzeigen</p>
+                        <p class="text-sm text-gray-600">Performance analysieren</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadDashboard();
+    });
+</script>
+{% endblock %}

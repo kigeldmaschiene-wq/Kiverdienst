@@ -1,0 +1,32 @@
+# KIVerdienst V2 - Backend Dependencies
+# CRITICAL: Include ALL dependencies to avoid crashes
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Pydantic with Email Validation - CRITICAL!
+pydantic==2.5.0
+pydantic[email]==2.5.0
+email-validator==2.1.0
+
+# Database
+asyncpg==0.29.0
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.23
+
+# AI Agents Dependencies
+requests==2.31.0
+
+# HTTP & Async
+httpx==0.25.2
+aiofiles==23.2.1
+python-multipart==0.0.6
+
+# AI & ML
+ollama==0.1.6
+
+# Utilities
+python-dotenv==1.0.0
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4

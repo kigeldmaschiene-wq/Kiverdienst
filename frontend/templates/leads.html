@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Leads - KIVerdienst V2{% endblock %}
+{% block header %}Lead Management{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <p class="text-sm text-gray-600 mb-1">Gesamt Leads</p>
+        <p id="totalLeads" class="text-3xl font-bold text-gray-900">0</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <p class="text-sm text-gray-600 mb-1">Emails Versendet</p>
+        <p id="emailsSent" class="text-3xl font-bold text-gray-900">0</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <p class="text-sm text-gray-600 mb-1">?ffnungsrate</p>
+        <p id="openRate" class="text-3xl font-bold text-gray-900">0%</p>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <p class="text-sm text-gray-600 mb-1">Klickrate</p>
+        <p id="clickRate" class="text-3xl font-bold text-gray-900">0%</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Alle Leads</h3>
+        <div id="leadsContainer">
+            <p class="text-gray-500 text-center py-8">Lade Leads...</p>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-xl font-semibold mb-4">Email Sequences</h3>
+        <div id="sequencesContainer">
+            <p class="text-gray-500 text-center py-8">Lade Sequenzen...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function loadLeads() {
+        try {
+            // Load stats
+            const stats = await api('/api/leads/stats');
+            document.getElementById('totalLeads').textContent = stats.total_leads || 0;
+            document.getElementById('emailsSent').textContent = stats.total_sent || 0;
+            document.getElementById('openRate').textContent = (stats.open_rate || 0).toFixed(1) + '%';
+            document.getElementById('clickRate').textContent = (stats.click_rate || 0).toFixed(1) + '%';
+            
+            // Load leads
+            const leads = await api('/api/leads');
+            const leadsContainer = document.getElementById('leadsContainer');
+            
+            if (leads.length === 0) {
+                leadsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">Keine Leads vorhanden.</p>';
+            } else {
+                leadsContainer.innerHTML = `
+                    <div class="space-y-2 max-h-96 overflow-y-auto">
+                        ${leads.slice(0, 20).map(lead => `
+                            <div class="flex items-center justify-between py-2 border-b">
+                                <div>
+                                    <p class="font-medium">${lead.email}</p>
+                                    <p class="text-sm text-gray-600">${lead.name || 'Kein Name'} ? ${lead.brand_name || 'Keine Marke'}</p>
+                                </div>
+                                <span class="px-2 py-1 text-xs rounded ${
+                                    lead.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                }">
+                                    ${lead.status}
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            // Load sequences
+            const sequences = await api('/api/leads/sequences');
+            const sequencesContainer = document.getElementById('sequencesContainer');
+            
+            if (sequences.length === 0) {
+                sequencesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">Keine Sequenzen vorhanden.</p>';
+            } else {
+                sequencesContainer.innerHTML = `
+                    <div class="space-y-3">
+                        ${sequences.map(seq => `
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-start justify-between mb-2">
+                                    <h4 class="font-semibold">${seq.sequence_name}</h4>
+                                    <span class="px-2 py-1 text-xs rounded ${
+                                        seq.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    }">
+                                        ${seq.active ? 'Aktiv' : 'Inaktiv'}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600">${seq.brand_name || 'Keine Marke'}</p>
+                                <p class="text-sm text-gray-600 mt-1">${seq.email_count || 0} Emails</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Leads load failed:', error);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLeads();
+    });
+</script>
+{% endblock %}

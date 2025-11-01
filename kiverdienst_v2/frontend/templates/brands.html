@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Marken - KIVerdienst V2{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Marken</h1>
+            <p class="text-gray-600 mt-1">Verwalte deine Content-Marken</p>
+        </div>
+        <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center">
+            <i class="fa-solid fa-plus mr-2"></i>Neue Marke
+        </button>
+    </div>
+    
+    <!-- Brands Grid -->
+    <div id="brands-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Brands werden hier eingef?gt -->
+    </div>
+    
+    <!-- Create/Edit Modal mit 4 Tabs -->
+    <div id="brandModal" class="hidden fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Marke bearbeiten</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fa-solid fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Tab Navigation -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="flex space-x-4">
+                    <button onclick="switchTab('basis')" data-tab="basis" class="tab-button px-4 py-2 border-b-2 border-blue-500 text-blue-600 font-medium">
+                        1. Basis
+                    </button>
+                    <button onclick="switchTab('character')" data-tab="character" class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium">
+                        2. Character
+                    </button>
+                    <button onclick="switchTab('plattformen')" data-tab="plattformen" class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium">
+                        3. Plattformen
+                    </button>
+                    <button onclick="switchTab('schedule')" data-tab="schedule" class="tab-button px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium">
+                        4. Schedule
+                    </button>
+                </nav>
+            </div>
+            
+            <form id="brandForm" onsubmit="handleSubmit(event)">
+                <!-- Tab 1: Basis -->
+                <div id="basisTab" class="tab-content">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Marken-Name *</label>
+                            <input type="text" name="name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nische *</label>
+                            <input type="text" name="niche" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="z.B. KI & Online Business">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Beschreibung</label>
+                            <textarea name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Videos pro Tag</label>
+                            <input type="number" name="videos_per_day" value="7" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input type="checkbox" name="active" id="active" checked class="mr-2">
+                            <label for="active" class="text-sm text-gray-700">Marke sofort aktivieren</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 2: Character -->
+                <div id="characterTab" class="tab-content hidden">
+                    <div class="space-y-4">
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <p class="text-sm text-blue-900"><strong>Hinweis:</strong> Characters k?nnen nach Erstellung der Marke unter "Characters" hochgeladen werden.</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Character-Typ</label>
+                            <select name="character_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="">Sp?ter festlegen</option>
+                                <option value="male">M?nnlich</option>
+                                <option value="female">Weiblich</option>
+                                <option value="both">Beide (A/B Testing)</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Voice ID (Azure TTS)</label>
+                            <select name="voice_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                                <option value="de-DE-ConradNeural">Conrad (M?nnlich)</option>
+                                <option value="de-DE-KatjaNeural">Katja (Weiblich)</option>
+                                <option value="de-DE-KillianNeural">Killian (M?nnlich)</option>
+                                <option value="de-DE-AmalaNeural">Amala (Weiblich)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 3: Plattformen -->
+                <div id="plattformenTab" class="tab-content hidden">
+                    <div class="space-y-6">
+                        <!-- TikTok -->
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="flex items-center text-lg font-medium">
+                                    <i class="fa-brands fa-tiktok text-2xl mr-2"></i>
+                                    TikTok
+                                </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="tiktok_enabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                </label>
+                            </div>
+                            <input type="text" name="tiktok_username" placeholder="@username" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        
+                        <!-- Instagram -->
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="flex items-center text-lg font-medium">
+                                    <i class="fa-brands fa-instagram text-2xl mr-2 text-pink-600"></i>
+                                    Instagram
+                                </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="instagram_enabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-pink-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                </label>
+                            </div>
+                            <input type="text" name="instagram_username" placeholder="@username" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                        
+                        <!-- YouTube -->
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="flex items-center text-lg font-medium">
+                                    <i class="fa-brands fa-youtube text-2xl mr-2 text-red-600"></i>
+                                    YouTube Shorts
+                                </label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" name="youtube_enabled" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-red-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                                </label>
+                            </div>
+                            <input type="text" name="youtube_username" placeholder="@channel" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Tab 4: Schedule -->
+                <div id="scheduleTab" class="tab-content hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Posting-Zeiten</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_times" value="08:00" class="mr-2">
+                                    08:00 Uhr
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_times" value="12:00" class="mr-2" checked>
+                                    12:00 Uhr
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_times" value="18:00" class="mr-2" checked>
+                                    18:00 Uhr
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_times" value="21:00" class="mr-2" checked>
+                                    21:00 Uhr
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Posting-Tage</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Mo" class="mr-2" checked>
+                                    Montag
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Di" class="mr-2" checked>
+                                    Dienstag
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Mi" class="mr-2" checked>
+                                    Mittwoch
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Do" class="mr-2" checked>
+                                    Donnerstag
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Fr" class="mr-2" checked>
+                                    Freitag
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="Sa" class="mr-2">
+                                    Samstag
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="posting_days" value="So" class="mr-2">
+                                    Sonntag
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-6 pt-6 border-t">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                        Abbrechen
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Speichern
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let brands = [];
+let editingId = null;
+
+// Tab Switching
+function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    
+    // Remove active from all buttons
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('border-blue-500', 'text-blue-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + 'Tab').classList.remove('hidden');
+    
+    // Activate button
+    const button = document.querySelector(`[data-tab="${tabName}"]`);
+    button.classList.add('border-blue-500', 'text-blue-600');
+    button.classList.remove('border-transparent', 'text-gray-500');
+}
+
+// Load Brands
+async function loadBrands() {
+    try {
+        const data = await apiCall('/api/brands');
+        brands = data;
+        renderBrands();
+    } catch (error) {
+        showError('Fehler beim Laden: ' + error.message);
+    }
+}
+
+// Render Brands
+function renderBrands() {
+    const container = document.getElementById('brands-container');
+    
+    if (brands.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full empty-state">
+                <i class="fa-solid fa-tag text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 mb-4">Noch keine Marken vorhanden</p>
+                <button onclick="openCreateModal()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    Erste Marke erstellen
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = brands.map(brand => `
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold">${brand.name}</h3>
+                <span class="px-2 py-1 text-xs rounded-full ${brand.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+                    ${brand.active ? 'Aktiv' : 'Inaktiv'}
+                </span>
+            </div>
+            <p class="text-gray-600 mb-2"><strong>Nische:</strong> ${brand.niche || '-'}</p>
+            <p class="text-gray-600 mb-4 text-sm">${brand.description || '-'}</p>
+            <div class="grid grid-cols-2 gap-2 text-sm mb-4">
+                <div><i class="fa-solid fa-user mr-1"></i> Characters: ${brand.character_count || 0}</div>
+                <div><i class="fa-solid fa-video mr-1"></i> Videos: ${brand.video_count || 0}</div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="editBrand(${brand.id})" class="flex-1 px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm">
+                    <i class="fa-solid fa-edit mr-1"></i>Bearbeiten
+                </button>
+                <button onclick="deleteBrand(${brand.id})" class="px-3 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Modal Handling
+function openCreateModal() {
+    editingId = null;
+    document.getElementById('brandForm').reset();
+    document.getElementById('brandModal').classList.remove('hidden');
+    switchTab('basis');
+}
+
+function closeModal() {
+    document.getElementById('brandModal').classList.add('hidden');
+    editingId = null;
+}
+
+function editBrand(id) {
+    editingId = id;
+    const brand = brands.find(b => b.id === id);
+    if (brand) {
+        document.querySelector('[name="name"]').value = brand.name || '';
+        document.querySelector('[name="niche"]').value = brand.niche || '';
+        document.querySelector('[name="description"]').value = brand.description || '';
+        document.querySelector('[name="videos_per_day"]').value = brand.videos_per_day || 7;
+        document.querySelector('[name="active"]').checked = brand.active == 1;
+        document.getElementById('brandModal').classList.remove('hidden');
+        switchTab('basis');
+    }
+}
+
+// Form Submit
+async function handleSubmit(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const data = {
+        name: formData.get('name'),
+        niche: formData.get('niche'),
+        description: formData.get('description'),
+        videos_per_day: parseInt(formData.get('videos_per_day')),
+        active: formData.get('active') ? 1 : 0
+    };
+    
+    try {
+        const method = editingId ? 'PUT' : 'POST';
+        const url = editingId ? `/api/brands/${editingId}` : '/api/brands';
+        
+        await apiCall(url, { method, body: JSON.stringify(data) });
+        
+        showSuccess(editingId ? 'Marke aktualisiert' : 'Marke erstellt');
+        closeModal();
+        loadBrands();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+// Delete Brand
+async function deleteBrand(id) {
+    if (!confirmAction('Marke wirklich l?schen? Alle zugeh?rigen Daten werden gel?scht!')) return;
+    
+    try {
+        await apiCall(`/api/brands/${id}`, { method: 'DELETE' });
+        showSuccess('Marke gel?scht');
+        loadBrands();
+    } catch (error) {
+        showError('Fehler: ' + error.message);
+    }
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', loadBrands);
+</script>
+{% endblock %}
