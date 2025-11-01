@@ -5,12 +5,15 @@ Handles PostgreSQL connection pool and table initialization
 """
 import os
 import asyncpg
+import psycopg2
+import psycopg2.extras
 import logging
 
 logger = logging.getLogger(__name__)
 
 # Global connection pool
 _pool = None
+_sync_conn = None
 
 async def get_pool():
     """Get or create database connection pool"""
@@ -33,10 +36,29 @@ async def create_pool():
 
 async def close_pool():
     """Close database connection pool"""
-    global _pool
+    global _pool, _sync_conn
     if _pool:
         await _pool.close()
         _pool = None
+    if _sync_conn:
+        _sync_conn.close()
+        _sync_conn = None
+
+def get_db():
+    """Get synchronous database connection for agents/workers"""
+    global _sync_conn
+    
+    if _sync_conn is None or _sync_conn.closed:
+        _sync_conn = psycopg2.connect(
+            host=os.getenv('DB_HOST', 'postgres'),
+            port=int(os.getenv('DB_PORT', 5432)),
+            database=os.getenv('DB_NAME', 'kiverdienst_v2'),
+            user=os.getenv('DB_USER', 'postgres'),
+            password=os.getenv('DB_PASSWORD', 'kiverdienst2024secure')
+        )
+        _sync_conn.autocommit = False
+    
+    return _sync_conn
 
 async def init_db():
     """Initialize database tables"""

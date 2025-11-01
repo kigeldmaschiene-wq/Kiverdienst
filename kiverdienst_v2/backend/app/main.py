@@ -39,10 +39,8 @@ from app.routes import (
     chat,
     landingpages,
     calendar,
-    content_generation,  # NEW: AI Content Generation
-    approval              # NEW: Approval Queue
+    approval
 )
-from app.routes import content_generation, approval
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -102,8 +100,8 @@ app.include_router(landingpages.router, prefix="/api/landing-pages", tags=["Land
 app.include_router(calendar.router, prefix="/api/calendar", tags=["Calendar"])
 
 # AI CONTENT ENGINE ROUTES (NEW!)
-app.include_router(content_generation.router, prefix="/api/content", tags=["Content Generation"])
 app.include_router(approval.router, prefix="/api/approval", tags=["Approval"])
+app.include_router(content.router, prefix="/api/content", tags=["Content Generation"])
 
 @app.get("/")
 async def root():

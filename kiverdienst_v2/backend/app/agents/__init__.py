@@ -1,1 +1,1 @@
-# KIVerdienst V2 - AI Agents Package
+# AI Agents Package
