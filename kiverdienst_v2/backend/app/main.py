@@ -33,13 +33,16 @@ from app.routes import (
     accounts,
     analytics,
     content,
-    dashboard,    # MISSING ROUTE #1
-    settings,     # MISSING ROUTE #2
-    logs,         # MISSING ROUTE #3
-    chat,         # MISSING ROUTE #4
-    landingpages, # MISSING ROUTE #5
-    calendar      # MISSING ROUTE #6
+    dashboard,
+    settings,
+    logs,
+    chat,
+    landingpages,
+    calendar,
+    content_generation,  # NEW: AI Content Generation
+    approval              # NEW: Approval Queue
 )
+from app.routes import content_generation, approval
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -97,6 +100,10 @@ app.include_router(logs.router, prefix="/api/logs", tags=["Logs"])
 app.include_router(chat.router, prefix="/api/mastermind", tags=["Mastermind"])
 app.include_router(landingpages.router, prefix="/api/landing-pages", tags=["Landing Pages"])
 app.include_router(calendar.router, prefix="/api/calendar", tags=["Calendar"])
+
+# AI CONTENT ENGINE ROUTES (NEW!)
+app.include_router(content_generation.router, prefix="/api/content", tags=["Content Generation"])
+app.include_router(approval.router, prefix="/api/approval", tags=["Approval"])
 
 @app.get("/")
 async def root():
